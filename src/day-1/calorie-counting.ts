@@ -13,7 +13,10 @@ export function getInventories(puzzleInput: string): string[] {
  * @param ListOfCaloriesCarried list of total calories in each inventory
  * @returns max calories found in inventory
  */
-export function maxCaloriesCarried(ListOfCaloriesCarried: number[], topN: number = 1): number[] {
+export function maxCaloriesCarried(
+  ListOfCaloriesCarried: number[],
+  topN = 1,
+): number[] {
   return ListOfCaloriesCarried.sort((a, b) => b - a).slice(0, topN);
 }
 
@@ -49,6 +52,8 @@ export function getMaxCaloriesFromPuzzleInput(puzzleInput: string): number[] {
     sumListOfNumbers(inv),
   );
   const maxCalories = maxCaloriesCarried(ListOfCaloriesCarried)[0];
-	const topThreeSum = maxCaloriesCarried(ListOfCaloriesCarried, 3).reduce((a, b) => a + b)
+  const topThreeSum = maxCaloriesCarried(ListOfCaloriesCarried, 3).reduce(
+    (a, b) => a + b,
+  );
   return [maxCalories, topThreeSum];
 }
