@@ -11,7 +11,7 @@ export function firstHalf(input?: string): number {
   for (let r = 0; r < rounds; r++) {
     for (const mId in monkeys) {
       const m = monkeys[mId];
-      const throws: Record<MonkeyId, number[]> = m.inspect({reliefMult: 3});
+      const throws: Record<MonkeyId, number[]> = m.inspect({ reliefMult: 3 });
       throwToMonkeys(throws, monkeys);
     }
   }
@@ -21,17 +21,17 @@ export function firstHalf(input?: string): number {
 }
 
 export function secondHalf(input?: string): number {
-
   if (!input) input = readFileSync("./src/11/input.txt", "utf-8");
   const monkeys: Record<MonkeyId, Monkey> = parseInput(input);
   const lowestCommonMultiple = getLowestCommonMultipleForMonkeys(monkeys);
   const rounds = 10_000;
 
   for (let r = 0; r < rounds; r++) {
-
     for (const mId in monkeys) {
       const m = monkeys[mId];
-      const throws: Record<MonkeyId, number[]> = m.inspect({lcm: lowestCommonMultiple}); // relief mult of 1
+      const throws: Record<MonkeyId, number[]> = m.inspect({
+        lcm: lowestCommonMultiple,
+      }); // relief mult of 1
       throwToMonkeys(throws, monkeys);
     }
   }
@@ -79,7 +79,7 @@ export function parseMonkeyString(monkeyString: string): Monkey {
 export class Monkey {
   id: MonkeyId;
   items: number[];
-  inspectionCount = (0);
+  inspectionCount = 0;
   operation: (old: number) => number;
   test: (divisble: number) => boolean;
   divisor: number;
@@ -101,31 +101,29 @@ export class Monkey {
     this.throwCondition = throwCondition;
   }
 
-  inspect(kwargs:{lcm?: number, reliefMult?: number}): Record<MonkeyId, number[]> {
-    const {lcm, reliefMult} = kwargs
+  inspect(kwargs: {
+    lcm?: number;
+    reliefMult?: number;
+  }): Record<MonkeyId, number[]> {
+    const { lcm, reliefMult } = kwargs;
     const throwItemsTo: Record<MonkeyId, number[]> = {};
 
-    this.inspectionCount += (this.items.length);
+    this.inspectionCount += this.items.length;
     const oldWorry = [...this.items];
     this.items = [];
 
     const newWorry = oldWorry.map((o) => this.operation(o));
     const relievedWorry = newWorry.map((n) =>
-      reliefMult
-        ? relief((reliefMult),(n))
-        : n,
+      reliefMult ? relief(reliefMult, n) : n,
     );
-    const test = relievedWorry.map((r) => this.test((r)));
+    const test = relievedWorry.map((r) => this.test(r));
 
     test.forEach((divisble, i) => {
       const divisibleString = divisble ? "true" : "false";
       const throwTo = this.throwCondition[divisibleString];
-      const reduce =
-        lcm
-          ? (relievedWorry[i]) % lcm
-          : relievedWorry[i];
+      const reduce = lcm ? relievedWorry[i] % lcm : relievedWorry[i];
       if (!throwItemsTo[throwTo]) throwItemsTo[throwTo] = [];
-      throwItemsTo[throwTo].push((reduce));
+      throwItemsTo[throwTo].push(reduce);
     });
 
     return Object.assign({ ...throwItemsTo });
@@ -151,9 +149,7 @@ export function calculateMonkeyBusiness(
     inspectionCountList.push(inspectionCount);
   }
 
-  const topTwo = inspectionCountList.sort((a, b) =>
-    ((b - a)),
-  );
+  const topTwo = inspectionCountList.sort((a, b) => b - a);
   const monkeyBusinessLevel = topTwo
     .slice(0, 2)
     .reduce((product, count) => product * count);
@@ -235,7 +231,7 @@ export function parseTestString(monkeyString: string): {
     throw new Error(`test string not found in string: ${monkeyString}`);
   const divisor = parseInt(matches[1]);
   return {
-    testFn: (divisible: number) => divisible % divisor === (0),
+    testFn: (divisible: number) => divisible % divisor === 0,
     divisor: divisor,
   };
 }
