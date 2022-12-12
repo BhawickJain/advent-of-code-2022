@@ -2,52 +2,46 @@ import { readFileSync } from "fs";
 
 type MonkeyId = number;
 
-export function firstHalf(input?: string): bigint {
+export function firstHalf(input?: string): number {
   if (!input) input = readFileSync("./src/11/input.txt", "utf-8");
   const monkeys: Record<MonkeyId, Monkey> = parseInput(input);
   const rounds = 20;
+  const lowestCommonMultiple = getLowestCommonMultipleForMonkeys(monkeys);
 
   for (let r = 0; r < rounds; r++) {
     for (const mId in monkeys) {
       const m = monkeys[mId];
-      const throws: Record<MonkeyId, bigint[]> = m.inspect(BigInt(3));
+      const throws: Record<MonkeyId, number[]> = m.inspect({reliefMult: 3});
       throwToMonkeys(throws, monkeys);
     }
   }
 
   const monkeyBusiness = calculateMonkeyBusiness(monkeys);
-
   return monkeyBusiness;
 }
 
-export function secondHalf(input?: string): bigint {
+export function secondHalf(input?: string): number {
+
   if (!input) input = readFileSync("./src/11/input.txt", "utf-8");
   const monkeys: Record<MonkeyId, Monkey> = parseInput(input);
-  getLowestCommonMultipleForMonkeys(monkeys);
+  const lowestCommonMultiple = getLowestCommonMultipleForMonkeys(monkeys);
   const rounds = 10_000;
 
-  // console.log('max number value:', Number.MAX_SAFE_INTEGER)
-
   for (let r = 0; r < rounds; r++) {
-    // display worry levels
-    // for (const mId in monkeys) {
-    // 	console.log(`monkey: ${mId}: ${monkeys[mId].items}`)
-    // }
 
     for (const mId in monkeys) {
       const m = monkeys[mId];
-      const throws: Record<MonkeyId, bigint[]> = m.inspect(); // relief mult of 1
+      const throws: Record<MonkeyId, number[]> = m.inspect({lcm: lowestCommonMultiple}); // relief mult of 1
       throwToMonkeys(throws, monkeys);
     }
   }
 
   const monkeyBusiness = calculateMonkeyBusiness(monkeys);
-
   return monkeyBusiness;
 }
 
 export function throwToMonkeys(
-  throws: Record<MonkeyId, bigint[]>,
+  throws: Record<MonkeyId, number[]>,
   monkeys: Record<MonkeyId, Monkey>,
 ): void {
   for (const throwToId in throws) {
@@ -66,8 +60,8 @@ export function parseInput(input: string): Record<MonkeyId, Monkey> {
 
 export function parseMonkeyString(monkeyString: string): Monkey {
   const monkeyID: MonkeyId = parseMonkeyIDString(monkeyString);
-  const startItems: bigint[] = parseStartItemsString(monkeyString);
-  const operation: (old: bigint) => bigint = parseOperationString(monkeyString);
+  const startItems: number[] = parseStartItemsString(monkeyString);
+  const operation: (old: number) => number = parseOperationString(monkeyString);
   const { testFn, divisor } = parseTestString(monkeyString);
   const throwCondition: { true: MonkeyId; false: MonkeyId } =
     parseThrowConditionString(monkeyString);
@@ -84,22 +78,20 @@ export function parseMonkeyString(monkeyString: string): Monkey {
 
 export class Monkey {
   id: MonkeyId;
-  items: bigint[];
-  inspectionCount = BigInt(0);
-  operation: (old: bigint) => bigint;
-  test: (divisble: bigint) => boolean;
-  divisor: bigint;
+  items: number[];
+  inspectionCount = (0);
+  operation: (old: number) => number;
+  test: (divisble: number) => boolean;
+  divisor: number;
   throwCondition: { true: MonkeyId; false: MonkeyId };
-  lowestCommonMultiple: bigint | undefined;
 
   constructor(
     id: MonkeyId,
-    startItems: bigint[],
-    operation: (old: bigint) => bigint,
-    divisor: bigint,
-    test: (divisible: bigint) => boolean,
+    startItems: number[],
+    operation: (old: number) => number,
+    divisor: number,
+    test: (divisible: number) => boolean,
     throwCondition: { true: MonkeyId; false: MonkeyId },
-    lowestCommonMultiple?: bigint,
   ) {
     this.id = id;
     this.items = startItems;
@@ -109,50 +101,39 @@ export class Monkey {
     this.throwCondition = throwCondition;
   }
 
-  inspect(reliefMult?: bigint): Record<MonkeyId, bigint[]> {
-    const throwItemsTo: Record<MonkeyId, bigint[]> = {};
+  inspect(kwargs:{lcm?: number, reliefMult?: number}): Record<MonkeyId, number[]> {
+    const {lcm, reliefMult} = kwargs
+    const throwItemsTo: Record<MonkeyId, number[]> = {};
 
-    this.inspectionCount += BigInt(this.items.length);
+    this.inspectionCount += (this.items.length);
     const oldWorry = [...this.items];
     this.items = [];
 
     const newWorry = oldWorry.map((o) => this.operation(o));
     const relievedWorry = newWorry.map((n) =>
       reliefMult
-        ? relief(parseInt(reliefMult.toString()), parseInt(n.toString()))
+        ? relief((reliefMult),(n))
         : n,
     );
-    const test = relievedWorry.map((r) => this.test(BigInt(r)));
+    const test = relievedWorry.map((r) => this.test((r)));
 
     test.forEach((divisble, i) => {
       const divisibleString = divisble ? "true" : "false";
       const throwTo = this.throwCondition[divisibleString];
-      // console.log('before reduce:', relievedWorry[i])
-      // console.log('reducer boolean:', this.lowestCommonMultiple && relievedWorry[i] % this.lowestCommonMultiple === BigInt(0))
       const reduce =
-        this.lowestCommonMultiple && divisble
-          ? BigInt(relievedWorry[i]) % this.lowestCommonMultiple
+        lcm
+          ? (relievedWorry[i]) % lcm
           : relievedWorry[i];
-      // const reduce = this.lowestCommonMultiple && relievedWorry[i] % this.lowestCommonMultiple === BigInt(0) ? smallestCommonMultiple(relievedWorry[i], this.lowestCommonMultiple) : relievedWorry[i]
-      // console.log('after reduce:', reduce)
       if (!throwItemsTo[throwTo]) throwItemsTo[throwTo] = [];
-      throwItemsTo[throwTo].push(BigInt(reduce));
+      throwItemsTo[throwTo].push((reduce));
     });
 
     return Object.assign({ ...throwItemsTo });
   }
 
-  catch(items: bigint[]) {
+  catch(items: number[]) {
     items.forEach((i) => this.items.push(i));
   }
-}
-
-export function smallestCommonMultiple(num: bigint, divisor: bigint): bigint {
-  let smallest = num;
-  while (smallest % divisor === BigInt(0)) {
-    smallest = smallest / divisor;
-  }
-  return smallest;
 }
 
 export function relief(mult: number, worryLevel: number): number {
@@ -162,18 +143,16 @@ export function relief(mult: number, worryLevel: number): number {
 
 export function calculateMonkeyBusiness(
   monkeys: Record<MonkeyId, Monkey>,
-): bigint {
-  const inspectionCountList: bigint[] = [];
+): number {
+  const inspectionCountList: number[] = [];
 
   for (const mId in monkeys) {
     const inspectionCount = monkeys[mId].inspectionCount;
     inspectionCountList.push(inspectionCount);
   }
 
-  // console.log('inspectionCountList', inspectionCountList)
-
   const topTwo = inspectionCountList.sort((a, b) =>
-    parseInt((b - a).toString()),
+    ((b - a)),
   );
   const monkeyBusinessLevel = topTwo
     .slice(0, 2)
@@ -190,7 +169,7 @@ export function parseMonkeyIDString(monkeyString: string): MonkeyId {
   return id;
 }
 
-export function parseStartItemsString(monkeyString: string): bigint[] {
+export function parseStartItemsString(monkeyString: string): number[] {
   const matches = Array.from(
     monkeyString.matchAll(/Starting\sitems:\s(.+)/g),
   )[0];
@@ -198,13 +177,13 @@ export function parseStartItemsString(monkeyString: string): bigint[] {
     throw new Error(`no start items not found in string: ${monkeyString}`);
   const startItemsString = matches[1];
   const arrayOfStringNumbers = startItemsString.split(/,\s/g);
-  const arrayOfNumbers = arrayOfStringNumbers.map((s) => BigInt(s));
+  const arrayOfNumbers = arrayOfStringNumbers.map((s) => parseInt(s));
   return arrayOfNumbers;
 }
 
 export function parseOperationString(
   monkeyString: string,
-): (old: bigint) => bigint {
+): (old: number) => number {
   const matches = Array.from(
     monkeyString.matchAll(/Operation: new = (.*)/g),
   )[0];
@@ -213,16 +192,16 @@ export function parseOperationString(
   const tokens = Array.from(matches[1].matchAll(/(.?(old|\d+?|[+*]).?)/g)).map(
     (m) => m[0].trim(),
   );
-  let operator: (arg1: bigint, arg2: bigint) => bigint;
-  const args: (bigint | "old")[] = [];
+  let operator: (arg1: number, arg2: number) => number;
+  const args: (number | "old")[] = [];
 
   for (const t of tokens) {
     if (t === "*") {
-      operator = (arg1: bigint, arg2) => arg1 * arg2;
+      operator = (arg1: number, arg2) => arg1 * arg2;
       continue;
     }
     if (t === "+") {
-      operator = (arg1: bigint, arg2) => arg1 + arg2;
+      operator = (arg1: number, arg2) => arg1 + arg2;
       continue;
     }
     if (t === "old") {
@@ -230,54 +209,50 @@ export function parseOperationString(
       continue;
     }
     if (/\d+?/g.test(t)) {
-      args.push(BigInt(t));
+      args.push(parseInt(t));
       continue;
     }
 
     throw new Error(`unknown token! '${t}'`);
   }
 
-  const newWorryFunction: (oldWorry: bigint) => bigint = (oldWorry: bigint) => {
+  const newWorryFunction: (oldWorry: number) => number = (oldWorry: number) => {
     const arg1 = args[0] === "old" ? oldWorry : args[0];
     const arg2 = args[1] === "old" ? oldWorry : args[1];
     const result = operator(arg1, arg2);
     return result;
   };
 
-  return (oldWorry: bigint) => newWorryFunction(oldWorry);
+  return (oldWorry: number) => newWorryFunction(oldWorry);
 }
 
 export function parseTestString(monkeyString: string): {
-  testFn: (divisble: bigint) => boolean;
-  divisor: bigint;
+  testFn: (divisble: number) => boolean;
+  divisor: number;
 } {
   const matches = Array.from(monkeyString.matchAll(/Test:.+?(\d+)/g))[0];
   if (!matches)
     throw new Error(`test string not found in string: ${monkeyString}`);
-  const divisor = BigInt(matches[1]);
+  const divisor = parseInt(matches[1]);
   return {
-    testFn: (divisible: bigint) => divisible % divisor === BigInt(0),
+    testFn: (divisible: number) => divisible % divisor === (0),
     divisor: divisor,
   };
 }
 
 export function getLowestCommonMultipleForMonkeys(
   monkeys: Record<number, Monkey>,
-): void {
-  const divisorArray: bigint[] = [];
+): number {
+  const divisorArray: number[] = [];
 
   for (const mId in monkeys) {
     divisorArray.push(monkeys[mId].divisor);
   }
 
-  const lcm = lowestCommonMultiple(divisorArray);
-
-  for (const mId in monkeys) {
-    monkeys[mId].lowestCommonMultiple = lcm;
-  }
+  return lowestCommonMultiple(divisorArray);
 }
 
-export function lowestCommonMultiple(divisor: bigint[]): bigint {
+export function lowestCommonMultiple(divisor: number[]): number {
   let lcm = divisor[0];
   for (let i = 1; i < divisor.length; i++)
     lcm = (divisor[i] * lcm) / greatestCommonDivisor(divisor[i], lcm);
@@ -285,8 +260,8 @@ export function lowestCommonMultiple(divisor: bigint[]): bigint {
   return lcm;
 }
 
-export function greatestCommonDivisor(a: bigint, b: bigint): bigint {
-  if (b == BigInt(0)) return a;
+export function greatestCommonDivisor(a: number, b: number): number {
+  if (b == 0) return a;
   return greatestCommonDivisor(b, a % b);
 }
 

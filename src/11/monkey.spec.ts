@@ -10,7 +10,6 @@ import {
   parseThrowConditionString,
   relief,
   secondHalf,
-  smallestCommonMultiple,
 } from "./monkey";
 
 const dataA = `Monkey 1:
@@ -105,51 +104,46 @@ Monkey 3:
     If false: throw to monkey 1`;
 
 test("firstHalf should return the level of money business after 20 rounds", () => {
-  expect(firstHalf(dataFullMock)).toBe(BigInt(10605));
+  expect(firstHalf(dataFullMock)).toBe((10605));
   console.log("first half real data result:", firstHalf());
 });
 
 test("secondHalf should return the level of money business after 10_000 rounds", () => {
-  expect(secondHalf(dataFullMock)).toBe(BigInt(2713310158));
+  expect(secondHalf(dataFullMock)).toBe((2713310158));
   console.log("second half real data result:", secondHalf());
 });
 
-test("smallestCommonMultiple return the smallest number possible given the divisor", () => {
-  expect(smallestCommonMultiple(BigInt(10), BigInt(2))).toBe(BigInt(5));
-  expect(smallestCommonMultiple(BigInt(100), BigInt(10))).toBe(BigInt(1));
-});
-
 test("lowestCommonMultiple returns the lowest common multiple across an array of numbers", () => {
-  expect(lowestCommonMultiple([BigInt(2), BigInt(3)])).toBe(BigInt(6));
-  expect(lowestCommonMultiple([BigInt(5), BigInt(100)])).toBe(BigInt(100));
+  expect(lowestCommonMultiple([(2), (3)])).toBe((6));
+  expect(lowestCommonMultiple([(5), (100)])).toBe((100));
   expect(
-    lowestCommonMultiple([BigInt(1), BigInt(2), BigInt(3), BigInt(8)]),
-  ).toBe(BigInt(24));
+    lowestCommonMultiple([(1), (2), (3), (8)]),
+  ).toBe((24));
 });
 
 test("monkey object correctly manages its state as inspect and catch class methods are instantiated", () => {
   const monkeyRecord = parseInput(dataD);
 
   const monkey0 = monkeyRecord[0];
-  const thrownItems0 = monkey0.inspect(BigInt(3));
-  expect(thrownItems0).toStrictEqual({ 3: [500, 620].map((n) => BigInt(n)) });
+  const thrownItems0 = monkey0.inspect(({reliefMult: 3}));
+  expect(thrownItems0).toStrictEqual({ 3: [500, 620].map((n) => (n)) });
 
   const monkey1 = monkeyRecord[1];
-  const thrownItems1 = monkey1.inspect(BigInt(3));
+  const thrownItems1 = monkey1.inspect(({reliefMult: 3}));
   expect(thrownItems1).toStrictEqual({
-    0: [20, 23, 27, 26].map((n) => BigInt(n)),
+    0: [20, 23, 27, 26].map((n) => (n)),
   });
 
   const monkey2 = monkeyRecord[2];
-  const thrownItems2 = monkey2.inspect(BigInt(3));
+  const thrownItems2 = monkey2.inspect(({reliefMult: 3}));
   expect(thrownItems2).toStrictEqual({
-    1: [2080].map((n) => BigInt(n)),
-    3: [1200, 3136].map((n) => BigInt(n)),
+    1: [2080].map((n) => (n)),
+    3: [1200, 3136].map((n) => (n)),
   });
 
   const monkey3 = monkeyRecord[3];
-  const thrownItems3 = monkey3.inspect(BigInt(3));
-  expect(thrownItems3).toStrictEqual({ 1: [25].map((n) => BigInt(n)) });
+  const thrownItems3 = monkey3.inspect(({reliefMult: 3}));
+  expect(thrownItems3).toStrictEqual({ 1: [25].map((n) => (n)) });
 });
 
 test("relief take take a worryLevel and return an integer with a relieved worry level", () => {
@@ -164,25 +158,25 @@ test("parseInput can take a serialised string of multiple Monkey initial states 
   const monkeyRecord = parseInput(dataC);
   const monkeyA = monkeyRecord[1];
   expect(monkeyA.id).toBe(1);
-  expect(monkeyA.test(BigInt(19 * 2))).toBe(true);
+  expect(monkeyA.test((19 * 2))).toBe(true);
 
   const monkeyB = monkeyRecord[0];
   expect(monkeyB.id).toBe(0);
-  expect(monkeyB.test(BigInt(23 * 2))).toBe(true);
+  expect(monkeyB.test((23 * 2))).toBe(true);
 });
 
 test("parseMonkeyString can return a monkey object given a serialised reprensation of an initial monkey state", () => {
   const monkeyA = parseMonkeyString(dataA);
   expect(monkeyA.id).toBe(1);
-  expect(monkeyA.test(BigInt(19 * 2))).toBe(true);
+  expect(monkeyA.test((19 * 2))).toBe(true);
 
   const monkeyB = parseMonkeyString(dataB);
   expect(monkeyB.id).toBe(0);
-  expect(monkeyB.test(BigInt(23 * 2))).toBe(true);
+  expect(monkeyB.test((23 * 2))).toBe(true);
 
   const monkeyE = parseMonkeyString(dataE);
   expect(monkeyE.id).toBe(3);
-  expect(monkeyE.test(BigInt(17 * 2))).toBe(true);
+  expect(monkeyE.test((17 * 2))).toBe(true);
 });
 
 test("parseThrowConditionString can return a structured object of id to throw do for true and false", () => {
@@ -192,41 +186,41 @@ test("parseThrowConditionString can return a structured object of id to throw do
 
 test("parseTestString can return a custom function that can evaluate whether is divisible according to input", () => {
   const dataATestFunction = parseTestString(dataA).testFn;
-  expect(dataATestFunction(BigInt(19))).toBe(true);
-  expect(dataATestFunction(BigInt(19 * 5))).toBe(true);
+  expect(dataATestFunction((19))).toBe(true);
+  expect(dataATestFunction((19 * 5))).toBe(true);
 
   const dataBTestFunction = parseTestString(dataB).testFn;
-  expect(dataBTestFunction(BigInt(23))).toBe(true);
-  expect(dataBTestFunction(BigInt(23 * 5))).toBe(true);
+  expect(dataBTestFunction((23))).toBe(true);
+  expect(dataBTestFunction((23 * 5))).toBe(true);
 
   const dataETestFunction = parseTestString(dataE).testFn;
-  expect(dataETestFunction(BigInt(17))).toBe(true);
-  expect(dataETestFunction(BigInt(17 * 5))).toBe(true);
+  expect(dataETestFunction((17))).toBe(true);
+  expect(dataETestFunction((17 * 5))).toBe(true);
 });
 
 test("parseOperationString can return a function that performs the instructed operation", () => {
   const dataAOperationFunction = parseOperationString(dataA);
-  expect(dataAOperationFunction(BigInt(4))).toBe(BigInt(10));
-  expect(dataAOperationFunction(BigInt(10))).toBe(BigInt(16));
+  expect(dataAOperationFunction((4))).toBe((10));
+  expect(dataAOperationFunction((10))).toBe((16));
 
   const dataBOperationFunction = parseOperationString(dataB);
-  expect(dataBOperationFunction(BigInt(1))).toBe(BigInt(19));
-  expect(dataBOperationFunction(BigInt(10))).toBe(BigInt(190));
+  expect(dataBOperationFunction((1))).toBe((19));
+  expect(dataBOperationFunction((10))).toBe((190));
 
   const dataEOperationFunction = parseOperationString(dataE);
-  expect(dataEOperationFunction(BigInt(7))).toBe(BigInt(10));
-  expect(dataEOperationFunction(BigInt(17))).toBe(BigInt(20));
+  expect(dataEOperationFunction((7))).toBe((10));
+  expect(dataEOperationFunction((17))).toBe((20));
 });
 
 test("parseStartItemsString can return a list of oldWorry values for each item", () => {
   expect(parseStartItemsString(dataA)).toStrictEqual(
-    [54, 65, 75, 74].map((n) => BigInt(n)),
+    [54, 65, 75, 74].map((n) => (n)),
   );
   expect(parseStartItemsString(dataB)).toStrictEqual(
-    [79, 98].map((n) => BigInt(n)),
+    [79, 98].map((n) => (n)),
   );
   expect(parseStartItemsString(dataE)).toStrictEqual(
-    [74].map((n) => BigInt(n)),
+    [74].map((n) => (n)),
   );
 });
 
