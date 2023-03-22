@@ -1,0 +1,24 @@
+version: "3.8"
+services:
+  lib:
+    container_name: aoc-2022
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    entrypoint: sh -c "bash scripts/lib-entrypoint.sh && tail -f /dev/null"
+    cap_add:
+      - SYS_ADMIN
+    volumes:
+      # overwrites node_modules installation with empty folder
+      - ..:/opt/lib
+      # overwrite node_modules directly from host with container
+      # enables access to node_modules installation in container
+      # creates an empty node_modules folder in host
+      # - /usr/workspace/my-app/node_modules
+    working_dir: /opt/lib
+    # prevent container from exiting immediately
+    stdin_open: true
+    # entrypoint: ["yarn"]
+    ports:
+      - 3000:3000
+    # command: npx babel --watch src --out-dir . --presets react-app/prod

@@ -1,0 +1,28 @@
+# https://hub.docker.com/_/node
+FROM node:16.17-alpine
+
+# Installs latest Chromium (89) package.
+RUN apk add --no-cache \
+      chromium \
+      nss \
+      freetype \
+      harfbuzz \
+      ca-certificates \
+      ttf-freefont \
+      nodejs \
+      yarn
+
+ENV PORT 3000
+
+# Next.js collects completely anonymous telemetry data about general usage.
+# Learn more here: https://nextjs.org/telemetry
+# Uncomment the following line in case you want to disable telemetry.
+ENV NEXT_TELEMETRY_DISABLED 1
+RUN apk add --no-cache --update \
+ bash sudo npm tree git
+WORKDIR /opt/lib/
+COPY . .
+# COPY ./package.json ./yarn.lock ./
+# RUN yarn
+
+EXPOSE 3000
